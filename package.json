@@ -1,0 +1,22 @@
+{
+  "name": "gunjs-db-client",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Jake",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@types/jest": "^23.3.2",
+    "jest": "^23.6.0",
+    "ts-jest": "^23.1.4",
+    "tslint": "^5.11.0",
+    "typescript": "^3.0.3"
+  },
+  "dependencies": {
+    "gun": "^0.9.99993"
+  }
+}

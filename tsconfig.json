@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2015",
+    "module": "commonjs",
+    "declaration": true,
+    "outDir": "dist",
+    "strict": true,
+    "noImplicitThis": false,
+    "lib": [
+      "esnext",
+      "dom",
+      "esnext.asynciterable",
+    ],
+    "downlevelIteration": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "global.d.ts"
+  ]
+}
