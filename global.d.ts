@@ -39,6 +39,7 @@ interface GunUserInstance extends GunInstance {
     create: (username: string, passphrase: string, callback?: (user: GunUserInstance, data: {err?: string, ok?: number, pub?: string}) => void) => GunUserInstance;
 
     /**
+     * authenticate the user in
      * @param username a string containing the username
      * @param passphrase a string containing the password/passphrase
      * @param callback a function to be invoked after the user creation
@@ -48,11 +49,13 @@ interface GunUserInstance extends GunInstance {
     auth: (username: string, passphrase: string, callback?: (user: GunUserInstance, gun: GunInstance & GunUserInstance & PromiseObj) => void, opts?: {newpass?: string, pin?: string, change?: string}) => GunUserInstance;
 
     /**
+     * log the user out
      * @return a promise to be resolved into a GunUserInstance object
      */
     leave: () => Promise<GunUserInstance>;
 
     /**
+     * remove the actual user
      * @param username a string containing the username
      * @param passphrase a string containing the password/passphrase
      * @return a promise to be resolved into a GunUserInstance object
@@ -60,6 +63,7 @@ interface GunUserInstance extends GunInstance {
     delete: (username: string, passphrase: string) => Promise<GunUserInstance>;
 
     /**
+     * go back
      * @param back a number indicates how much to return from the current index (optional)
      * @param opts an object containing properties that extend the functionality of this function
      */
