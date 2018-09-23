@@ -1,13 +1,38 @@
 type GunDataNode = object | string | boolean | number | null;
+
 interface PromiseObj {
     put: object;
     get: GunDataNode;
     gun: GunInstance;
 }
 
+interface IInjectedDeps {
+    account?: GunAccountInstance;
+    gun?: GunInstance;
+    time?: () => Date;
+    encrypt?: (target: string, salt: string) => Promise<string>;
+    work?: (pairsalt1: string, pairsalt2: string) => Promise<string>;
+    decrypt?: (target: string, salt: string) => Promise<string>;
+}
+
+interface IGunSetterCallback {
+    '#': string;
+    ok: boolean;
+    err?: string;
+    out?: object;
+    user?: GunAccountInstance;
+}
+
+type IGunCallback<T> = (err: string | null, result?: T) => void;
+
 interface GunInstance {
     // core api
-    put: (data: GunDataNode, callback?: any) => GunInstance;
+
+    /**
+     *
+     *
+     */
+    put: (data: GunDataNode, callback?: (data: IGunSetterCallback) => void) => GunInstance;
     get: (path: string) => GunInstance;
     opt: (opts: object) => GunInstance;
     back: (amount?: number) => GunInstance;
@@ -15,28 +40,28 @@ interface GunInstance {
     // main api
     on: (callback?: any, options?: object) => GunInstance;
     once: (callback?: any, options?: object) => GunInstance;
-    set: (data: GunInstance | object, callback?: any) => void;
+    set: (data: GunInstance | object, callback?: (data: IGunSetterCallback) => void) => void;
     map: (callback?: any) => GunInstance;
 
     // extended api
-    then: () => Promise<PromiseObj>;
     unset: (node: GunInstance) => GunInstance;
-    docLoad: (callback?: (data: object, key: string) => void) => GunInstance;
+    docLoad: <T>(callback: (data: T, key: string) => void) => GunInstance;
+    encrypt: (data: GunInstance | object, callback?: (data: IGunSetterCallback) => void) => void;
 
     // subInstance api
-    user: () => GunUserInstance;
+    user: (pub?: string) => GunAccountInstance;
 }
 
-interface GunUserInstance extends GunInstance {
+interface GunAccountInstance extends GunInstance {
     // core api
 
     /**
      * creates a user
      * @param username a string containing the username
      * @param passphrase a string containing the password/passphrase
-     * @return returns a GunUserInstance
+     * @return returns a GunAccountInstance
      */
-    create: (username: string, passphrase: string, callback?: (user: GunUserInstance, data: {err?: string, ok?: number, pub?: string}) => void) => GunUserInstance;
+    create: (username: string, passphrase: string, callback?: (data: {wait?: boolean, err?: string, ok?: number, pub: string}) => void) => GunAccountInstance;
 
     /**
      * authenticate the user in
@@ -44,46 +69,46 @@ interface GunUserInstance extends GunInstance {
      * @param passphrase a string containing the password/passphrase
      * @param callback a function to be invoked after the user creation
      * @param opts an optional object containing optional parameters that extends the functions functionality
-     * @return a GunUserInstance
+     * @return a GunAccountInstance
      */
-    auth: (username: string, passphrase: string, callback?: (user: GunUserInstance, gun: GunInstance & GunUserInstance & PromiseObj) => void, opts?: {newpass?: string, pin?: string, change?: string}) => GunUserInstance;
+    auth: (username: string, passphrase: string, callback?: (data: {wait?: boolean, err?: string, ok?: number, pub: string}) => void, opts?: {newpass?: string, pin?: string, change?: string}) => GunAccountInstance;
 
     /**
      * log the user out
-     * @return a promise to be resolved into a GunUserInstance object
+     * @return a promise to be resolved into a GunAccountInstance object
      */
-    leave: () => Promise<GunUserInstance>;
+    leave: () => Promise<GunAccountInstance | Error>;
 
     /**
      * remove the actual user
      * @param username a string containing the username
      * @param passphrase a string containing the password/passphrase
-     * @return a promise to be resolved into a GunUserInstance object
+     * @return a promise to be resolved into a GunAccountInstance object
      */
-    delete: (username: string, passphrase: string) => Promise<GunUserInstance>;
+    delete: (username: string, passphrase: string) => Promise<GunAccountInstance>;
 
     /**
      * go back
      * @param back a number indicates how much to return from the current index (optional)
      * @param opts an object containing properties that extend the functionality of this function
      */
-    recall: (back?: number, opts?: {hook?: (props: object) => any}) => Promise<GunUserInstance>;
+    recall: (back?: number, opts?: {hook?: (props: object) => any}) => Promise<GunAccountInstance>;
 
     /**
      * this function returns back to the user root document (with user.back(-1)) and internally calls reAuth on the current user
-     * @return a promise to be resolved into a GunUserInstance object
+     * @return a promise to be resolved into a GunAccountInstance object
      */
-    alive: () => Promise<GunUserInstance>;
+    alive: () => Promise<GunAccountInstance>;
 
     /**
      * trust another user with a specific current user data
-     * example: gun.get('alice').get('age').trust(bob);
+     * example: user.get('private').get('age').trust(bob)
      * @param user a user GunInstance object
      * @return this function returns an extended GunInstance with extra properties that are useless
      */
     trust: (user: GunInstance) => Promise<{
         // 'next state' gun user instance
-        $: GunUserInstance & GunInstance;
+        $: GunAccountInstance & GunInstance;
         // trust soul
         '@': string;
         get: string;

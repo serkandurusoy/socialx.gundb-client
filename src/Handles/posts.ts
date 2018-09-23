@@ -21,12 +21,12 @@ export const getAllUserPosts = (userObj: GunInstance, filterFunc?: any) => userO
 export const getAllUsersFriendsPosts = (friendsObj: GunInstance, filterFunc?: any) => friendsObj.get('posts').map(filterFunc);
 
 // setters
-export const createUserPost = (userObj: GunInstance, args: ICreateUserPostArgs) => {
-    const postId = uuid();
-    const post = posts.get(postId).put(args);
+export const createUserPost = ({user, gun}: IInjectedDeps, args: ICreateUserPostArgs) => {
+    gun.get('posts').set({postData, alias});
+    gun.get('postsByUser').get(alias).set({postId})
 
-    getUserPosts(userObj).put({postId: })
-    return post;
+    gun.get('posts').get('comments/${postSoul}').set({commentData, alias})
+    gun.get('posts').get('comments/${postSoul}/replies').set({replyData, alias})
 }
 
 // other

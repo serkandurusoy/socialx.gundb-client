@@ -1,15 +1,12 @@
-import * as Gun from "gun/gun";
+import * as Gun from 'gun/gun';
 
-Gun.chain.docLoad = function(cb: (data: object, key: string) => GunInstance, opt = { skipnull: true, log: true }) {
+Gun.chain.docLoad = function(cb: (data: object | undefined, key: string) => GunInstance) {
   const gun = this;
   const root = gun.back(-1);
   // return an instance of gun with once (used to be .val), best option here.
   return this.once((obj: object, key: string) => {
     // if null or undefined (but shouldnt be able to be that, right ?).. skip it if opt allows
-    if (obj == null && opt.skipnull) {
-      if (opt.log) {
-        console.log("skipping null");
-      }
+    if (obj === null) {
       return;
     }
 
