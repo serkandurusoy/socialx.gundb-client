@@ -6,13 +6,13 @@ interface PromiseObj {
     gun: GunInstance;
 }
 
-interface IInjectedDeps {
-    account?: GunAccountInstance;
-    gun?: GunInstance;
-    time?: () => Date;
-    encrypt?: (target: string, salt: string) => Promise<string>;
-    work?: (pairsalt1: string, pairsalt2: string) => Promise<string>;
-    decrypt?: (target: string, salt: string) => Promise<string>;
+interface IContext {
+    account: GunAccountInstance;
+    gun: GunInstance;
+    time: () => Date;
+    encrypt: (target: string, salt: string) => Promise<string>;
+    work: (pairsalt1: string, pairsalt2: string) => Promise<string>;
+    decrypt: (target: string, salt: string) => Promise<string>;
 }
 
 interface IGunSetterCallback {

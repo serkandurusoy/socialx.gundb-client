@@ -7,7 +7,7 @@ export interface ICreatePostInput {
     private: boolean;
 }
 
-export const createPost = ({account, gun, time}: IInjectedDeps, createPostInput: ICreatePostInput, callback: IGunCallback<null>) => {
+export const createPost = ({account, gun, time}: IContext, createPostInput: ICreatePostInput, callback: IGunCallback<null>) => {
     if (!account || !gun || !time) {
         return callback('failed, injected parameters');
     }
@@ -27,8 +27,6 @@ export const createPost = ({account, gun, time}: IInjectedDeps, createPostInput:
 
     const method = createPostInput.private ? 'encrypt' : 'set';
 
-    // .set for public
-    // .secret for
     gun.get('posts/' + path)[method]({...createPostInput, owner: currentUserAlias, timestamp: time().getTime()}, (flags: IGunSetterCallback) => {
         if (flags.err) {
             return callback('failed, error => ' + flags.err);
@@ -49,21 +47,21 @@ export const createPost = ({account, gun, time}: IInjectedDeps, createPostInput:
     });
 }
 
-export const createComment = ({gun, time, account}: IInjectedDeps, {text, postId}: any, callback: IGunCallback<null>) => {
-    if (!gun || !time || !account) {
-        return callback('failed, injected parameter');
+export const likePost = ({account, gun, time}: IContext, {postId}: any, callback: IGunCallback<null>) => {
+    if (!gun || !account || !time) {
+        return callback('failed, injected parameters');
     }
-    
+
+    if (!account.is) {
+        return callback('a user needs to be logged in to proceed');
+    }
+
     gun.get('postsById').get(postId).docLoad((data: {path: string, priv: boolean, owner: string}) => {
         if (!data) {
             return callback('no post found by this id');
         }
-        
-        if (!account.is) {
-            return callback('a user has to be logged in to proceed');
-        }
 
-        gun.get('posts/' + data.path).get('comments').set({text, timestamp: time().getTime(), owner: account.is.alias}, (ack) => {
+        gun.get('posts/' + data.path).get('likes').get(account.is.alias).put({timestamp: time().getTime()}, (ack) => {
             if (ack.err) {
                 return callback('failed, error => ' + ack.err);
             }

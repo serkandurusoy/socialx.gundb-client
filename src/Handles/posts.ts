@@ -21,7 +21,7 @@ export const getAllUserPosts = (userObj: GunInstance, filterFunc?: any) => userO
 export const getAllUsersFriendsPosts = (friendsObj: GunInstance, filterFunc?: any) => friendsObj.get('posts').map(filterFunc);
 
 // setters
-export const createUserPost = ({user, gun}: IInjectedDeps, args: ICreateUserPostArgs) => {
+export const createUserPost = ({user, gun}: IContext, args: ICreateUserPostArgs) => {
     gun.get('posts').set({postData, alias});
     gun.get('postsByUser').get(alias).set({postId})
 

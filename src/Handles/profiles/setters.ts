@@ -5,7 +5,7 @@ interface ICreateProfileInput {
     pub: string;
 }
 
-export const createProfile = ({gun}: IInjectedDeps, createProfileInput: ICreateProfileInput, callback: IGunCallback<null>) => {
+export const createProfile = ({gun}: IContext, createProfileInput: ICreateProfileInput, callback: IGunCallback<null>) => {
     if (!gun) {
         return callback('failed, injected parameter');
     }

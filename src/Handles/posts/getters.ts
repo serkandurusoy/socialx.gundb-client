@@ -1,7 +1,5 @@
 import {ICreatePostInput} from './setters';
 
-// TODO PLEASE REVIEW THIS AGAIN!!!!!!!
-
 const setToArray = ({_, ...data}: any) => {
     return Object.values(data).map(({v, ...rest}: any) => {
       const {_, ...deepRest} = rest;
@@ -9,7 +7,7 @@ const setToArray = ({_, ...data}: any) => {
     });
 }
 
-export const getPostPathsByUser = ({gun}: IInjectedDeps, {username}: any, callback: IGunCallback<string[]>) => {
+export const getPostPathsByUser = ({gun}: IContext, {username}: any, callback: IGunCallback<string[]>) => {
     if (!gun) {
         return callback('failed, injected parameters');
     }
@@ -25,7 +23,7 @@ export const getPostPathsByUser = ({gun}: IInjectedDeps, {username}: any, callba
     });
 }
 
-export const getPostByPath = ({gun}: IInjectedDeps, {path}: any, callback: IGunCallback<ICreatePostInput>) => {
+export const getPostByPath = ({gun}: IContext, {path}: any, callback: IGunCallback<ICreatePostInput>) => {
     if (!gun) {
         return callback('fail, injected parameter');
     }
@@ -35,7 +33,7 @@ export const getPostByPath = ({gun}: IInjectedDeps, {path}: any, callback: IGunC
     });
 }
 
-export const getPostsByDate = ({gun}: IInjectedDeps, {date}: {date: Date}, callback: IGunCallback<ICreatePostInput>) => {
+export const getPostsByDate = ({gun}: IContext, {date}: {date: Date}, callback: IGunCallback<ICreatePostInput>) => {
     if (!gun) {
         return callback('failed, injected parameter');
     }
@@ -52,12 +50,22 @@ export const getPostsByDate = ({gun}: IInjectedDeps, {date}: {date: Date}, callb
     })
 }
 
-export const getPostComments = ({gun}: IInjectedDeps, {postId}: any, callback: IGunCallback<{text: string, timestamp: number, owner: string}[]>) => {
+export const getPostComments = ({gun}: IContext, {postId}: any, callback: IGunCallback<{text: string, timestamp: number, owner: string}[]>) => {
     if (!gun) {
         return callback('failed, injected parameters');
     }
 
     gun.get('postsById').get(postId).docLoad((data: {path: string}) => {
-
+        if (!data) {
+            return callback('no post found with this id');
+        }
+        gun.get('posts/' + data.path).get('comments').docLoad((data: {text: string, timestamp: number, owner: string}) => {
+            if (!data) {
+                return callback('no posts found by this path');
+            }
+            const comments = setToArray(data).map(({text, timestamp, owner}: any) => ({text, timestamp, owner}));
+            
+            return callback(null, comments);
+        });
     });
 }

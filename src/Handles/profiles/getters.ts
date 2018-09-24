@@ -1,3 +1,6 @@
+import * as handles from './handles';
+import { user } from '../root';
+
 interface IGetPublicKeyInput {
     username: string;
 }
@@ -8,26 +11,19 @@ export interface IProfile {
     avatar: string;
 }
 
-export const getPublicKey = ({gun}: IInjectedDeps, {username}: IGetPublicKeyInput, callback: IGunCallback<{pub: string}>) => {
-    if (!gun) {
-        return callback('failed, injected parameters');
-    }
-
-    gun.get('profiles').get(username).docLoad(({pub}: IProfile) => {
+export const getPublicKey = (context: IContext, {username}: IGetPublicKeyInput, callback: IGunCallback<{pub: string}>) => {
+    handles.profileByUsername(context, {username}).docLoad(({pub}: IProfile) => {
         return callback(null, {pub});
     });
 }
 
-export const getCurrentProfile = ({gun, account}: IInjectedDeps, callback: IGunCallback<IProfile>) => {
-    if (!account || !gun) {
-        return callback('failed, injected parameters');
-    }
-
+export const getCurrentProfile = (context: IContext, callback: IGunCallback<IProfile>) => {
+    const {account} = context;
     if (!account.is) {
         return callback('a user needs to be logged in to proceed');
     }
 
-    gun.get('profiles').get(account.is.alias).docLoad((data: IProfile) => {
+    handles.currentUserProfile(context).docLoad((data: IProfile) => {
         if (!data) {
             return callback('no user profile found');
         }
@@ -36,12 +32,8 @@ export const getCurrentProfile = ({gun, account}: IInjectedDeps, callback: IGunC
     });
 }
 
-export const getProfileByUsername = ({gun}: IInjectedDeps, {username}: any, callback: IGunCallback<IProfile>) => {
-    if (!gun) {
-        return callback('failed, injected parameters');
-    }
-
-    gun.get('profiles').get(username).docLoad((data: IProfile) => {
+export const getProfileByUsername = (context: IContext, {username}: any, callback: IGunCallback<IProfile>) => {
+    handles.profileByUsername(context, {username}).docLoad((data: IProfile) => {
         if (!data) {
             return callback('no user profile found');
         }

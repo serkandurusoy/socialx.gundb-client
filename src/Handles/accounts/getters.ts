@@ -2,10 +2,7 @@
  * check if there is a account logged in
  * @return a boolean
  */
-export const isAccountLoggedIn = ({account}: IInjectedDeps, callback: IGunCallback<any>) => {
-    if (!account) {
-        return callback('failed, injected parameter');
-    }
-
+export const isAccountLoggedIn = (context: IContext, callback: IGunCallback<any>) => {
+    const {account} = context;
     return callback(null, {loggedIn: !!account.is});
 };

@@ -50,11 +50,11 @@ interface ICreateAccountInput extends IRecoverData<string> {
  * @param args an oject collection of the user data
  * @return a promise to be resolved with the current user instance (@GunUserInstance)
  */
-export const createAccount = ({account, encrypt, work, gun}: IInjectedDeps, createAccountInput: ICreateAccountInput, callback: IGunCallback<null>) => {
-    if (!account || !encrypt || !work || !gun) {
-        return callback('failed, injected parameters');
-    }
+export const createAccount = (context: IContext, createAccountInput: ICreateAccountInput, callback: IGunCallback<null>) => {
+    const {account, encrypt, work} = context;
+
     const {username, password, email, avatar, recover: {reminder, question1, question2}} = createAccountInput;
+
     // start the creation process here
     account.create(username, password, (ack) => {
         if (ack.wait) {
@@ -80,7 +80,7 @@ export const createAccount = ({account, encrypt, work, gun}: IInjectedDeps, crea
                         return callback('failed, error => ' + flags.err);
                     }
 
-                    createProfile({gun}, {username, email, avatar, pub: ack.pub}, (err) => {
+                    createProfile(context, {username, email, avatar, pub: ack.pub}, (err) => {
                         if (err) {
                             return callback(err);
                         }
@@ -99,10 +99,8 @@ export const createAccount = ({account, encrypt, work, gun}: IInjectedDeps, crea
  * @param passphrase a string containing a password/passphrase
  * @param callback an optional callback after the user authentication
  */
-export const login = ({account}: IInjectedDeps, {username, password}: any, callback: IGunCallback<null>) => {
-    if (!account) {
-        return callback('failed, injected parameters');
-    }
+export const login = (context: IContext, {username, password}: any, callback: IGunCallback<null>) => {
+    const {account} = context;
     account.auth(username, password, (ack) => {
         if (ack.err) {
             return callback('failed, error => ' + ack.err);
@@ -116,10 +114,8 @@ export const login = ({account}: IInjectedDeps, {username, password}: any, callb
  * log the user out
  * @return a promise to be resolved into a user instance (@GunUserInstance)
  */
-export const logout = async ({account}: IInjectedDeps, callback: IGunCallback<null>) => {
-    if (!account) {
-        return callback(null);
-    }
+export const logout = async (context: IContext, callback: IGunCallback<null>) => {
+    const {account} = context;
     try {
         await account.leave();
         return callback(null);
@@ -134,10 +130,8 @@ export const logout = async ({account}: IInjectedDeps, callback: IGunCallback<nu
  * @param newPassword a string containing the new password
  * @param callback the callback after the password change happened
  */
-export const changePassword = ({account}: IInjectedDeps, {oldPassword, newPassword}: any, callback: IGunCallback<null>) => {
-    if (!account) {
-        return callback('failed, injected parameters');
-    }
+export const changePassword = (context: IContext, {oldPassword, newPassword}: any, callback: IGunCallback<null>) => {
+    const {account} = context;
     if (!account.is) {
         return callback('a user needs to be logged in in-order to proceed');
     }
@@ -155,16 +149,13 @@ export const changePassword = ({account}: IInjectedDeps, {oldPassword, newPasswo
  * @param callback a mandator callback that carries on the recovery phrase the user first entered on signin
  * @return a void
  */
-export const recoverAccount = ({decrypt, work, gun}: IInjectedDeps, {username, question1, question2}: any, callback: IGunCallback<{hint: string}>) => {
-    if (!decrypt || !work || !gun) {
-        return callback('failed, injected parameters');
-    }
-
+export const recoverAccount = (context: IContext, {username, question1, question2}: any, callback: IGunCallback<{hint: string}>) => {
+    const {decrypt, work} = context;
 
     // we can use docLoad here, but it will be non preformant and useless because
     // it will load the whole doc when we only need a specific thing
     // all this does is iterate through the user and get the recovery doc and pass to the doRec func
-    getPublicKey({gun}, {username}, (err, data) => {
+    getPublicKey(context, {username}, (err, data) => {
         if (!data) {
             return callback('failed, no public key found');
         }
@@ -185,10 +176,9 @@ export const recoverAccount = ({decrypt, work, gun}: IInjectedDeps, {username, q
  * this function allows the 'governance' to function properly (if something is created privately the trusted user is able to see that)
  * @param alias a string containing the username/alias of the targeted user to trust
  */
-export const trustAccount = async ({account, gun}: IInjectedDeps, callback: IGunCallback<null>) => {
-    if (!account || !gun) {
-        return callback('failed, injected parameters');
-    }
+export const trustAccount = async (context: IContext, callback: IGunCallback<null>) => {
+    const {account} = context;
+    
     if (!account.is) {
         return callback('a user needs to be logged in in-order to proceed');
     }
