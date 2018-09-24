@@ -161,7 +161,7 @@ export const recoverAccount = (context: IContext, {username, question1, question
         if (!data) {
             return callback('failed, no public key found');
         }
-        const targetAccount = accountHandles.accountByPub(context, {pub: data.pub});
+        const targetAccount = accountHandles.accountByPub(context, data.pub);
         targetAccount.docLoad(async (data: any) => {
             try {
                 const {recover: {encryptedReminder}} = data;

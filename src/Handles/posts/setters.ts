@@ -1,3 +1,4 @@
+import * as postHandles from './handles';
 import {datePathFromDate} from './helpers';
 
 export interface ICreatePostInput {
@@ -32,12 +33,12 @@ export const createPost = (context: IContext, createPostInput: ICreatePostInput,
             return callback('failed, error => ' + flags.err);
         }
         const postId = flags['#'];
-        gun.get(TABLES.POST_METAS_BY_USER).get(currentUserAlias).set({postPath: `${path}/${postId}`}, (flags) => {
+        postHandles.postMetasByCurrentUser(context).set({postPath: `${path}/${postId}`}, (flags) => {
             if (flags.err) {
                 return callback('failed, error => ' + flags.err);
             }
 
-            gun.get(TABLES.POST_META_BY_ID).get(postId).put({postPath: `${path}/${postId}`, privatePost: createPostInput.private, owner: currentUserAlias}, (ack) => {
+            postHandles.postMetaById(context, postId).put({postPath: `${path}/${postId}`, privatePost: createPostInput.private, owner: currentUserAlias}, (ack) => {
                 if (ack.err) {
                     return callback('failed, error => ' + ack.err);
                 }
@@ -48,18 +49,13 @@ export const createPost = (context: IContext, createPostInput: ICreatePostInput,
 }
 
 export const likePost = (context: IContext, {postId}: any, callback: IGunCallback<null>) => {
-    const {account, gun, time} = context;
-
-    if (!account.is) {
-        return callback('a user needs to be logged in to proceed');
-    }
-
-    gun.get('postsById').get(postId).docLoad((data: {path: string, privatePost: boolean, owner: string}) => {
+    const {account, time} = context;
+    postHandles.postMetaById(context, postId).docLoad((data: {postPath: string, privatePost: boolean, owner: string}) => {
         if (!data) {
             return callback('no post found by this id');
         }
 
-        gun.get('posts/' + data.path).get('likes').get(account.is.alias).put({timestamp: time().getTime()}, (ack) => {
+        postHandles.postLikesByCurrentUser(context, data.postPath).put({timestamp: time().getTime()}, (ack) => {
             if (ack.err) {
                 return callback('failed, error => ' + ack.err);
             }

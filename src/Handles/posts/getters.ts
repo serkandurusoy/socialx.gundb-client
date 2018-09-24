@@ -1,9 +1,11 @@
 import {ICreatePostInput} from './setters';
 import * as postHandles from './handles';
-import {datePathFromDate, IPostMetasCallback, setToArray} from './helpers';
+import * as commentHandles from '../comments/handles';
+
+import {datePathFromDate, IMetasCallback, ILikesMetasCallback, setToArray} from './helpers';
 
 export const getPostPathsByUser = (context: IContext, {username}: any, callback: IGunCallback<string[]>) => {
-    postHandles.postMetasByUsername(context, username).docLoad((data: IPostMetasCallback) => {
+    postHandles.postMetasByUsername(context, username).docLoad((data: IMetasCallback) => {
         if (!data) {
             return callback('failed, no posts found');
         }
@@ -25,7 +27,7 @@ export const getPublicPostsByDate = (context: IContext, {date}: {date: Date}, ca
 
     const datePath = datePathFromDate(date);
 
-    gun.get('posts/' + datePath).get('public').docLoad((data: ICreatePostInput) => {
+    postHandles.postsByDate(context, datePath).docLoad((data: ICreatePostInput) => {
         if (!data) {
             return callback('failed, no posts found by date');
         }
@@ -37,17 +39,31 @@ export const getPublicPostsByDate = (context: IContext, {date}: {date: Date}, ca
 export const getPostComments = (context: IContext, {postId}: any, callback: IGunCallback<{text: string, timestamp: number, owner: string}[]>) => {
     const {gun} = context;
 
-    gun.get('postsById').get(postId).docLoad((data: {path: string}) => {
+    postHandles.postMetaById(context, postId).docLoad((data: {postPath: string}) => {
         if (!data) {
             return callback('no post found with this id');
         }
-        gun.get('posts/' + data.path).get('comments').docLoad((data: {text: string, timestamp: number, owner: string}) => {
+        commentHandles.commentsByPostPath(context, data.postPath).docLoad((data: IMetasCallback) => {
             if (!data) {
                 return callback('no posts found by this path');
             }
             const comments = setToArray(data).map(({text, timestamp, owner}: any) => ({text, timestamp, owner}));
 
             return callback(null, comments);
+        });
+    });
+}
+
+export const getPostLikes = (context: IContext, {postId}: any, callback: IGunCallback<ILikesMetasCallback>) => {
+    postHandles.postMetaById(context, postId).docLoad((data: {postPath: string}) => {
+        if (!data) {
+            return callback('no post found by this id');
+        }
+        postHandles.likesByPostPath(context, data.postPath).docLoad((data: ILikesMetasCallback) => {
+            if (!data) {
+                return callback('no post found by this path');
+            }
+            return callback(null, data);
         });
     });
 }

@@ -1,12 +1,26 @@
 export const datePathFromDate = (date: Date) => date.getUTCFullYear() + '/' + (date.getUTCMonth() + 1) + '/' + date.getUTCDate();
 
-export interface IPostMetasCallback {
+interface IPostMetasCallback {
+    postPath: string;
+}
+
+interface ICommentMetasCallback {
+    text: string;
+    timestamp: number;
+    owner: string;
+}
+
+export interface ILikesMetasCallback {
     [key: string]: {
-        postPath: string;
+        timestamp: number;
     }
 }
 
-export const setToArray = ({_, ...data}: IPostMetasCallback) => {
+export interface IMetasCallback {
+    [key: string]: IPostMetasCallback | ICommentMetasCallback;
+}
+
+export const setToArray = ({_, ...data}: IMetasCallback | ILikesMetasCallback) => {
     return Object.values(data).map(({v, ...rest}: any) => {
         const {_, ...deepRest} = rest;
         return deepRest;

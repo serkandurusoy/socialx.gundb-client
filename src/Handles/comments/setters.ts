@@ -8,19 +8,18 @@ export const createComment = (context: IContext, {text, postId}: any, callback: 
         return callback('a user has to be logged in to proceed');
     }
 
-    postHandles.postMetaById(context, postId).docLoad((data: {path: string, privatePost: boolean, owner: string}) => {
+    postHandles.postMetaById(context, postId).docLoad((data: {postPath: string, privatePost: boolean, owner: string}) => {
         if (!data) {
             return callback('no post found by this id');
         }
 
-        const postPath = `${data.path}/${postId}`;
-        commentHandles.commentsByPostPath(context, postPath).set({text, timestamp: time().getTime(), owner: account.is.alias}, (flags) => {
+        commentHandles.commentsByPostPath(context, data.postPath).set({text, timestamp: time().getTime(), owner: account.is.alias}, (flags) => {
             if (flags.err) {
                 return callback('failed, error => ' + flags.err);
             }
 
             const commentId = flags['#'];
-            commentHandles.commentMetaById(context, commentId).put({owner: account.is.alias, postPath: data.path, timestamp: time().getTime()}, (ack) => {
+            commentHandles.commentMetaById(context, commentId).put({owner: account.is.alias, postPath: data.postPath, timestamp: time().getTime()}, (ack) => {
                 if (ack.err) {
                     return callback('failed, error => ' + ack.err);
                 }
