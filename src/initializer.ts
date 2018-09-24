@@ -19,7 +19,7 @@ export const account = gun.user();
 
 Gun.chain.encrypt = function(data: any, cb?: any){
 	var gun = this, user = gun.back(-1).user(), pair = user.pair(), path = '';
-	gun.back(function(at){ if(at.pub){ return } path += (at.get||'') });
+	gun.back(function(at: any){ if(at.pub){ return } path += (at.get||'') });
 	(async function(){
 	var enc, sec = await user.get('trust').get(pair.pub).get(path).then();
 	sec = await Gun.SEA.decrypt(sec, pair);

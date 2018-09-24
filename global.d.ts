@@ -10,6 +10,11 @@ declare enum TABLES {
     PROFILES = 'profiles',
 }
 
+declare enum TABLE_ENUMS {
+    PRIVATE = 'private',
+    PUBLIC = 'public',
+}
+
 interface IPostMetasCallback {
     postPath: string;
 }
@@ -22,12 +27,13 @@ interface ICommentMetasCallback {
 
 interface ILikesMetasCallback {
     [key: string]: {
+        owner: string;
         timestamp: number;
     }
 }
 
 interface IMetasCallback {
-    [key: string]: IPostMetasCallback | ICommentMetasCallback;
+    [key: string]: IPostMetasCallback | ICommentMetasCallback | ILikesMetasCallback;
 }
 
 interface IContext {

@@ -18,11 +18,6 @@ export const postByPath = (context: IContext, postPath: string) => {
     return gun.get(TABLES.POSTS).get(postPath);
 };
 
-export const postsByPath = (context: IContext, path: string) => {
-    const {gun} = context;
-    return gun.get(TABLES.POSTS).get(path);
-}
-
 export const postsByDate = (context: IContext, datePath: string) => {
     const {gun} = context;
     return gun.get(TABLES.POSTS).get(datePath).get('public');
@@ -30,10 +25,10 @@ export const postsByDate = (context: IContext, datePath: string) => {
 
 export const likesByPostPath = (context: IContext, postPath: string) => {
     const {gun} = context;
-    return gun.get(TABLES.POSTS).get(postPath).get('likes');
+    return gun.get(TABLES.POSTS).get(postPath).get(TABLES.LIKES);
 }
 
 export const postLikesByCurrentUser = (context: IContext, postPath: string) => {
     const {gun, account} = context;
-    return gun.get(TABLES.POSTS).get(postPath).get('likes').get(account.is.alias);
+    return gun.get(TABLES.POSTS).get(postPath).get(TABLES.LIKES).get(account.is.alias);
 }
