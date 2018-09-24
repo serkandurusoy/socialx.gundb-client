@@ -82,7 +82,7 @@ export const createAccount = (context: IContext, createAccountInput: ICreateAcco
                         return callback('failed, error => ' + flags.err);
                     }
 
-                    createProfile(context, {username, email, avatar, pub: ack.pub}, (err) => {
+                    createProfile(context, {username, email, avatar, pub: account.is.pub}, (err) => {
                         if (err) {
                             return callback(err);
                         }

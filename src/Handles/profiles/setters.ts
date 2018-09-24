@@ -1,3 +1,5 @@
+import * as profileHandles from './handles';
+
 interface ICreateProfileInput {
     username: string;
     email: string;
@@ -6,9 +8,8 @@ interface ICreateProfileInput {
 }
 
 export const createProfile = (context: IContext, createProfileInput: ICreateProfileInput, callback: IGunCallback<null>) => {
-    const {gun} = context;
     const {username, ...rest} = createProfileInput;
-    gun.get('profiles').get(username).put({...rest}, (flags) => {
+    profileHandles.profileByUsername(context, username).put({...rest}, (flags) => {
         if (flags.err) {
             return callback('failed, error => ' + flags.err);
         }

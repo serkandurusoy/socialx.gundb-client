@@ -10,10 +10,24 @@ declare enum TABLES {
     PROFILES = 'profiles',
 }
 
-interface PromiseObj {
-    put: object;
-    get: GunDataNode;
-    gun: GunInstance;
+interface IPostMetasCallback {
+    postPath: string;
+}
+
+interface ICommentMetasCallback {
+    text: string;
+    timestamp: number;
+    owner: string;
+}
+
+interface ILikesMetasCallback {
+    [key: string]: {
+        timestamp: number;
+    }
+}
+
+interface IMetasCallback {
+    [key: string]: IPostMetasCallback | ICommentMetasCallback;
 }
 
 interface IContext {
@@ -37,11 +51,6 @@ type IGunCallback<T> = (err: string | null, result?: T) => void;
 
 interface GunInstance {
     // core api
-
-    /**
-     *
-     *
-     */
     put: (data: GunDataNode, callback?: (data: IGunSetterCallback) => void) => GunInstance;
     get: (path: string) => GunInstance;
     opt: (opts: object) => GunInstance;
@@ -116,14 +125,9 @@ interface GunAccountInstance extends GunInstance {
      * @param user a user GunInstance object
      * @return this function returns an extended GunInstance with extra properties that are useless
      */
-    trust: (user: GunInstance) => Promise<{
-        // 'next state' gun user instance
-        $: GunAccountInstance & GunInstance;
-        // trust soul
-        '@': string;
-        get: string;
-        put: string | undefined;
-    }>;
+    trust: (user: GunInstance) => Promise<null>;
+
+    grant: (user: GunInstance) => Promise<null>;
 
     /**
      * this function returns the pair keys (private/public) keys of the current users encryption (rsa)

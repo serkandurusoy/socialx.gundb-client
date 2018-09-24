@@ -2,7 +2,7 @@ import {ICreatePostInput} from './setters';
 import * as postHandles from './handles';
 import * as commentHandles from '../comments/handles';
 
-import {datePathFromDate, IMetasCallback, ILikesMetasCallback, setToArray} from './helpers';
+import {datePathFromDate, setToArray} from './helpers';
 
 export const getPostPathsByUser = (context: IContext, {username}: any, callback: IGunCallback<string[]>) => {
     postHandles.postMetasByUsername(context, username).docLoad((data: IMetasCallback) => {
@@ -34,24 +34,6 @@ export const getPublicPostsByDate = (context: IContext, {date}: {date: Date}, ca
 
         return callback(null, data);
     })
-}
-
-export const getPostComments = (context: IContext, {postId}: any, callback: IGunCallback<{text: string, timestamp: number, owner: string}[]>) => {
-    const {gun} = context;
-
-    postHandles.postMetaById(context, postId).docLoad((data: {postPath: string}) => {
-        if (!data) {
-            return callback('no post found with this id');
-        }
-        commentHandles.commentsByPostPath(context, data.postPath).docLoad((data: IMetasCallback) => {
-            if (!data) {
-                return callback('no posts found by this path');
-            }
-            const comments = setToArray(data).map(({text, timestamp, owner}: any) => ({text, timestamp, owner}));
-
-            return callback(null, comments);
-        });
-    });
 }
 
 export const getPostLikes = (context: IContext, {postId}: any, callback: IGunCallback<ILikesMetasCallback>) => {
