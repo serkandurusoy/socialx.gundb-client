@@ -1,10 +1,9 @@
 import {ICreatePostInput} from './setters';
 import * as postHandles from './handles';
-import * as commentHandles from '../comments/handles';
 
-import {datePathFromDate, setToArray} from './helpers';
+import {datePathFromDate, setToArray} from '../../utils/helpers';
 
-export const getPostPathsByUser = (context: IContext, {username}: any, callback: IGunCallback<string[]>) => {
+export const getPostPathsByUser = (context: IContext, {username}: {username: string}, callback: IGunCallback<string[]>) => {
     postHandles.postMetasByUsername(context, username).docLoad((data: IMetasCallback) => {
         if (!data) {
             return callback('failed, no posts found');
@@ -14,17 +13,15 @@ export const getPostPathsByUser = (context: IContext, {username}: any, callback:
 
         return callback(null, paths);
     });
-}
+};
 
-export const getPostByPath = (context: IContext, {postPath}: any, callback: IGunCallback<ICreatePostInput>) => {
+export const getPostByPath = (context: IContext, {postPath}: {postPath: string}, callback: IGunCallback<ICreatePostInput>) => {
     postHandles.postByPath(context, postPath).docLoad((data: ICreatePostInput) => {
         return callback(null, data);
     });
-}
+};
 
 export const getPublicPostsByDate = (context: IContext, {date}: {date: Date}, callback: IGunCallback<ICreatePostInput>) => {
-    const {gun} = context;
-
     const datePath = datePathFromDate(date);
 
     postHandles.postsByDate(context, datePath).docLoad((data: ICreatePostInput) => {
@@ -34,9 +31,9 @@ export const getPublicPostsByDate = (context: IContext, {date}: {date: Date}, ca
 
         return callback(null, data);
     })
-}
+};
 
-export const getPostLikes = (context: IContext, {postId}: any, callback: IGunCallback<ILikesMetasCallback>) => {
+export const getPostLikes = (context: IContext, {postId}: {postId: string}, callback: IGunCallback<ILikesMetasCallback>) => {
     postHandles.postMetaById(context, postId).docLoad((data: {postPath: string}) => {
         if (!data) {
             return callback('no post found by this id');
@@ -48,4 +45,4 @@ export const getPostLikes = (context: IContext, {postId}: any, callback: IGunCal
             return callback(null, data);
         });
     });
-}
+};

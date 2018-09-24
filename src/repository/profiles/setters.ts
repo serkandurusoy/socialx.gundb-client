@@ -16,4 +16,4 @@ export const createProfile = (context: IContext, createProfileInput: ICreateProf
 
         callback(null);
     });
-}
+};

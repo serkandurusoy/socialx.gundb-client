@@ -1,11 +1,9 @@
 import * as postHandles from '../posts/handles';
 import * as commentHandles from './handles';
 
-import {setToArray} from '../posts/helpers';
+import {setToArray} from '../../utils/helpers';
 
-export const getPostComments = (context: IContext, {postId}: any, callback: IGunCallback<{text: string, timestamp: number, owner: string}[]>) => {
-    const {gun} = context;
-
+export const getPostComments = (context: IContext, {postId}: {postId: string}, callback: IGunCallback<IMetasCallback[]>) => {
     postHandles.postMetaById(context, postId).docLoad((data: {postPath: string}) => {
         if (!data) {
             return callback('no post found with this id');
@@ -14,15 +12,15 @@ export const getPostComments = (context: IContext, {postId}: any, callback: IGun
             if (!data) {
                 return callback('no posts found by this path');
             }
-            const comments = setToArray(data).map(({text, timestamp, owner}: any) => ({text, timestamp, owner}));
+            const comments = setToArray(data).map(({text, timestamp, owner}: IMetasCallback) => ({text, timestamp, owner}));
 
             return callback(null, comments);
         });
     });
 }
 
-export const getPostLikes = (context: IContext, {commentId}: any, callback: IGunCallback<{owner: string, timestamp: number}[]>) => {
-    commentHandles.commentMetaById(context, commentId).docLoad((data: {owner: string, postPath: string, timestamp: number}) => {
+export const getPostLikes = (context: IContext, {commentId}: any, callback: IGunCallback<IMetasCallback[]>) => {
+    commentHandles.commentMetaById(context, commentId).docLoad((data: ILikesMetasCallback) => {
         if (!data) {
             return callback('no comment by this id was found');
         }

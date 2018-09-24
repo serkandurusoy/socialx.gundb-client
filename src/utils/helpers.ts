@@ -5,4 +5,9 @@ export const setToArray = ({_, ...data}: IMetasCallback | ILikesMetasCallback) =
         const {_, ...deepRest} = rest;
         return deepRest;
     });
-}
+};
+
+export const getContextMeta = (context: IContext) => ({
+    owner: context.account.is.alias,
+    timestamp: context.time().getTime(),
+});

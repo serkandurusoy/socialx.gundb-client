@@ -13,10 +13,13 @@ declare enum TABLES {
 declare enum TABLE_ENUMS {
     PRIVATE = 'private',
     PUBLIC = 'public',
+    RECOVER ='recover',
 }
 
 interface IPostMetasCallback {
     postPath: string;
+    privatePost: boolean;
+    owner: string;
 }
 
 interface ICommentMetasCallback {

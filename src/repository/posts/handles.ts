@@ -11,7 +11,7 @@ export const postMetasByUsername = (context: IContext, username: string) => {
 export const postMetasByCurrentUser = (context: IContext) => {
     const {gun, account} = context;
     return gun.get(TABLES.POST_METAS_BY_USER).get(account.is.alias);
-}
+};
 
 export const postByPath = (context: IContext, postPath: string) => {
     const {gun} = context;
@@ -20,15 +20,15 @@ export const postByPath = (context: IContext, postPath: string) => {
 
 export const postsByDate = (context: IContext, datePath: string) => {
     const {gun} = context;
-    return gun.get(TABLES.POSTS).get(datePath).get('public');
-}
+    return gun.get(TABLES.POSTS).get(datePath).get(TABLE_ENUMS.PUBLIC);
+};
 
 export const likesByPostPath = (context: IContext, postPath: string) => {
     const {gun} = context;
     return gun.get(TABLES.POSTS).get(postPath).get(TABLES.LIKES);
-}
+};
 
 export const postLikesByCurrentUser = (context: IContext, postPath: string) => {
     const {gun, account} = context;
     return gun.get(TABLES.POSTS).get(postPath).get(TABLES.LIKES).get(account.is.alias);
-}
+};

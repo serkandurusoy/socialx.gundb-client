@@ -14,7 +14,7 @@ export const getPublicKeyByUsername = (context: IContext, {username}: IGetPublic
     profileHandles.profileByUsername(context, username).docLoad(({pub}: IProfile) => {
         return callback(null, {pub});
     });
-}
+};
 
 export const getCurrentProfile = (context: IContext, callback: IGunCallback<IProfile>) => {
     const {account} = context;
@@ -29,9 +29,9 @@ export const getCurrentProfile = (context: IContext, callback: IGunCallback<IPro
 
         return callback(null, data);
     });
-}
+};
 
-export const getProfileByUsername = (context: IContext, {username}: any, callback: IGunCallback<IProfile>) => {
+export const getProfileByUsername = (context: IContext, {username}: {username: string}, callback: IGunCallback<IProfile>) => {
     profileHandles.profileByUsername(context, username).docLoad((data: IProfile) => {
         if (!data) {
             return callback('no user profile found');
@@ -39,4 +39,4 @@ export const getProfileByUsername = (context: IContext, {username}: any, callbac
 
         return callback(null, data);
     });
-}
+};

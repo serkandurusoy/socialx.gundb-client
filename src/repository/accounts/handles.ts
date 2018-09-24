@@ -1,6 +1,6 @@
 export const currentAccountRecover = (context: IContext) => {
     const {account} = context;
-    return account.get('recover');
+    return account.get(TABLE_ENUMS.RECOVER);
 };
 
 export const accountByPub = (context: IContext, pub: string) => {

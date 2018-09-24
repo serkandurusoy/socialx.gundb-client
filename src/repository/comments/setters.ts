@@ -1,37 +1,48 @@
 import * as postHandles from '../posts/handles';
 import * as commentHandles from './handles';
+import {getContextMeta} from '../../utils/helpers';
 
 export const createComment = (context: IContext, {text, postId}: any, callback: IGunCallback<null>) => {
-    const {gun, time, account} = context;
+    const {account} = context;
 
     if (!account.is) {
         return callback('a user has to be logged in to proceed');
     }
 
-    postHandles.postMetaById(context, postId).docLoad((data: {postPath: string, privatePost: boolean, owner: string}) => {
+    postHandles.postMetaById(context, postId).docLoad((data: IPostMetasCallback) => {
         if (!data) {
             return callback('no post found by this id');
         }
 
-        commentHandles.commentsByPostPath(context, data.postPath).set({text, timestamp: time().getTime(), owner: account.is.alias}, (flags) => {
+        const {postPath} = data;
+        const {owner, timestamp} = getContextMeta(context);
+
+        commentHandles.commentsByPostPath(context, postPath).set({text, timestamp, owner}, (flags) => {
             if (flags.err) {
                 return callback('failed, error => ' + flags.err);
             }
 
             const commentId = flags['#'];
-            commentHandles.commentMetaById(context, commentId).put({owner: account.is.alias, postPath: data.postPath, timestamp: time().getTime()}, (ack) => {
+
+            commentHandles
+                .commentMetaById(context, commentId)
+                .put({
+                    owner,
+                    postPath: postPath,
+                    timestamp,
+                }, (ack) => {
                 if (ack.err) {
                     return callback('failed, error => ' + ack.err);
                 }
-
                 return callback(null);
             });
+
         });
     });
-}
+};
 
 export const likeComment = (context: IContext, {commentId}: any, callback: IGunCallback<null>) => {
-    const {account, gun, time} = context;
+    const {account} = context;
 
     if (!account.is) {
         return callback('a user needs to be logged in to proceed');
@@ -42,8 +53,10 @@ export const likeComment = (context: IContext, {commentId}: any, callback: IGunC
             return callback('no comment found by this id');
         }
 
+        const {owner, timestamp} = getContextMeta(context);
         const commentPath = `${TABLES.POSTS}/${data.postPath}/${TABLES.COMMENTS}/${commentId}`;
-        commentHandles.likesByCommentPath(context, commentPath).set({owner: account.is.alias, timestamp: time().getTime()}, (ack) => {
+
+        commentHandles.likesByCommentPath(context, commentPath).set({owner, timestamp}, (ack) => {
             if (ack.err) {
                 return callback('failed, error => ' + ack.err);
             }
@@ -51,4 +64,4 @@ export const likeComment = (context: IContext, {commentId}: any, callback: IGunC
             return callback(null);
         });
     });
-}
+};

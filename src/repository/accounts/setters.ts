@@ -38,6 +38,17 @@ interface IRecoverData<T> {
     }
 }
 
+interface IRecoverAccountInput {
+    username: string;
+    question1: string;
+    question2: string;
+}
+
+interface IChangePassword {
+    oldPassword: string;
+    newPassword: string;
+}
+
 interface ICreateAccountInput extends IRecoverData<string> {
     username: string;
     password: string;
@@ -46,12 +57,6 @@ interface ICreateAccountInput extends IRecoverData<string> {
 }
 
 // TODO: rollback
-
-/**
- * create a new user
- * @param args an oject collection of the user data
- * @return a promise to be resolved with the current user instance (@GunUserInstance)
- */
 export const createAccount = (context: IContext, createAccountInput: ICreateAccountInput, callback: IGunCallback<null>) => {
     const {account, encrypt, work} = context;
 
@@ -95,12 +100,7 @@ export const createAccount = (context: IContext, createAccountInput: ICreateAcco
     });
 };
 
-/**
- * authenticate the user
- * @param username a string containing the username
- * @param passphrase a string containing a password/passphrase
- * @param callback an optional callback after the user authentication
- */
+
 export const login = (context: IContext, {username, password}: any, callback: IGunCallback<null>) => {
     const {account} = context;
     account.auth(username, password, (ack) => {
@@ -112,10 +112,6 @@ export const login = (context: IContext, {username, password}: any, callback: IG
     });
 };
 
-/**
- * log the user out
- * @return a promise to be resolved into a user instance (@GunUserInstance)
- */
 export const logout = async (context: IContext, callback: IGunCallback<null>) => {
     const {account} = context;
     try {
@@ -126,14 +122,9 @@ export const logout = async (context: IContext, callback: IGunCallback<null>) =>
     }
 };
 
-/**
- * change the current user password
- * @param oldPassword a string containing the old password
- * @param newPassword a string containing the new password
- * @param callback the callback after the password change happened
- */
-export const changePassword = (context: IContext, {oldPassword, newPassword}: any, callback: IGunCallback<null>) => {
+export const changePassword = (context: IContext, {oldPassword, newPassword}: IChangePassword, callback: IGunCallback<null>) => {
     const {account} = context;
+
     if (!account.is) {
         return callback('a user needs to be logged in in-order to proceed');
     }
@@ -143,20 +134,9 @@ export const changePassword = (context: IContext, {oldPassword, newPassword}: an
     }, {change: newPassword});
 };
 
-/**
- * try and recover the user's reminder phrase
- * @param alias a string containing the user's username/alias
- * @param question1 a string containing the answer for their recovery question1
- * @param question2 a string containing the answer for their recovery question2
- * @param callback a mandator callback that carries on the recovery phrase the user first entered on signin
- * @return a void
- */
-export const recoverAccount = (context: IContext, {username, question1, question2}: any, callback: IGunCallback<{hint: string}>) => {
+export const recoverAccount = (context: IContext, {username, question1, question2}: IRecoverAccountInput, callback: IGunCallback<{hint: string}>) => {
     const {decrypt, work} = context;
 
-    // we can use docLoad here, but it will be non preformant and useless because
-    // it will load the whole doc when we only need a specific thing
-    // all this does is iterate through the user and get the recovery doc and pass to the doRec func
     getPublicKeyByUsername(context, {username}, (err, data) => {
         if (!data) {
             return callback('failed, no public key found');
@@ -174,10 +154,8 @@ export const recoverAccount = (context: IContext, {username, question1, question
     });
 };
 
-/**
- * this function allows the 'governance' to function properly (if something is created privately the trusted user is able to see that)
- * @param alias a string containing the username/alias of the targeted user to trust
- */
+// this function allows the 'governance' to function properly (if something is
+// created privately the trusted user is able to see that)
 export const trustAccount = async (context: IContext, callback: IGunCallback<null>) => {
     const {account} = context;
 
