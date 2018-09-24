@@ -6,15 +6,8 @@
     "outDir": "dist",
     "strict": true,
     "noImplicitThis": false,
-    "lib": [
-      "esnext",
-      "dom",
-      "esnext.asynciterable",
-    ],
+    "lib": ["esnext"],
     "downlevelIteration": true
   },
-  "include": [
-    "src/**/*.ts",
-    "global.d.ts"
-  ]
+  "include": ["src"]
 }
