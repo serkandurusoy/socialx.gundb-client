@@ -1,47 +1,31 @@
 import {ICreatePostInput} from './setters';
+import * as postHandles from './handles';
+import {datePathFromDate, IPostMetasCallback, setToArray} from './helpers';
 
-const setToArray = ({_, ...data}: any) => {
-    return Object.values(data).map(({v, ...rest}: any) => {
-      const {_, ...deepRest} = rest;
-      return deepRest;
-    });
-}
-
-export const getPostPathsByUser = ({gun}: IContext, {username}: any, callback: IGunCallback<string[]>) => {
-    if (!gun) {
-        return callback('failed, injected parameters');
-    }
-
-    gun.get('postsByUser').get(username).docLoad((data: {path: string}) => {
+export const getPostPathsByUser = (context: IContext, {username}: any, callback: IGunCallback<string[]>) => {
+    postHandles.postMetasByUsername(context, username).docLoad((data: IPostMetasCallback) => {
         if (!data) {
             return callback('failed, no posts found');
         }
 
-        const paths = setToArray(data).map(({path}: any) => path);
-        
+        const paths = setToArray(data).map(({postPath}: any) => postPath);
+
         return callback(null, paths);
     });
 }
 
-export const getPostByPath = ({gun}: IContext, {path}: any, callback: IGunCallback<ICreatePostInput>) => {
-    if (!gun) {
-        return callback('fail, injected parameter');
-    }
-
-    gun.get('posts/' + path).docLoad((data: ICreatePostInput) => {
+export const getPostByPath = (context: IContext, {postPath}: any, callback: IGunCallback<ICreatePostInput>) => {
+    postHandles.postByPath(context, postPath).docLoad((data: ICreatePostInput) => {
         return callback(null, data);
     });
 }
 
-export const getPostsByDate = ({gun}: IContext, {date}: {date: Date}, callback: IGunCallback<ICreatePostInput>) => {
-    if (!gun) {
-        return callback('failed, injected parameter');
-    }
+export const getPublicPostsByDate = (context: IContext, {date}: {date: Date}, callback: IGunCallback<ICreatePostInput>) => {
+    const {gun} = context;
 
-    const datePath = date.getUTCFullYear() + '/' + (date.getUTCMonth() + 1) + '/' + date.getUTCDate();
+    const datePath = datePathFromDate(date);
 
-
-    gun.get('posts/' + datePath).docLoad((data: ICreatePostInput) => {
+    gun.get('posts/' + datePath).get('public').docLoad((data: ICreatePostInput) => {
         if (!data) {
             return callback('failed, no posts found by date');
         }
@@ -50,10 +34,8 @@ export const getPostsByDate = ({gun}: IContext, {date}: {date: Date}, callback: 
     })
 }
 
-export const getPostComments = ({gun}: IContext, {postId}: any, callback: IGunCallback<{text: string, timestamp: number, owner: string}[]>) => {
-    if (!gun) {
-        return callback('failed, injected parameters');
-    }
+export const getPostComments = (context: IContext, {postId}: any, callback: IGunCallback<{text: string, timestamp: number, owner: string}[]>) => {
+    const {gun} = context;
 
     gun.get('postsById').get(postId).docLoad((data: {path: string}) => {
         if (!data) {
@@ -64,7 +46,7 @@ export const getPostComments = ({gun}: IContext, {postId}: any, callback: IGunCa
                 return callback('no posts found by this path');
             }
             const comments = setToArray(data).map(({text, timestamp, owner}: any) => ({text, timestamp, owner}));
-            
+
             return callback(null, comments);
         });
     });

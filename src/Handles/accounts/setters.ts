@@ -1,22 +1,3 @@
-import {createProfile} from '../profiles/setters';
-import {getPublicKey, IProfile} from '../profiles/getters';
-
-interface IRecoverData<T> {
-    recover: {
-        question1: T;
-        question2: T;
-        reminder: string;
-        encryptedReminder?: string;
-    }
-}
-
-interface ICreateAccountInput extends IRecoverData<string> {
-    username: string;
-    password: string;
-    email: string;
-    avatar: string;
-}
-
 /**
  * TODO
  * 0. add the remaining current user data on the creation? what is the remaining data?
@@ -42,6 +23,27 @@ interface ICreateAccountInput extends IRecoverData<string> {
  * and what it does is that it pairs teacker + live and lock the reminder on them
  * so next time the user forgets his password, we ask these questions and they get back their reminder (notice here we are not going to return the actual password because of sec reasons / will change in the future)
  */
+
+
+import * as accountHandles from './handles';
+import {createProfile} from '../profiles/setters';
+import {getPublicKeyByUsername} from '../profiles/getters';
+
+interface IRecoverData<T> {
+    recover: {
+        question1: T;
+        question2: T;
+        reminder: string;
+        encryptedReminder?: string;
+    }
+}
+
+interface ICreateAccountInput extends IRecoverData<string> {
+    username: string;
+    password: string;
+    email: string;
+    avatar: string;
+}
 
 // TODO: rollback
 
@@ -70,7 +72,7 @@ export const createAccount = (context: IContext, createAccountInput: ICreateAcco
                 // after the user is authenticate we create their recovery setting
                 const encryptedReminder = await encrypt(reminder, await work(question1, question2));
 
-                account.get('recover').put({
+                accountHandles.currentAccountRecover(context).put({
                     // recovery stuff here
                     encryptedReminder,
                     question1: question1.length,
@@ -155,11 +157,11 @@ export const recoverAccount = (context: IContext, {username, question1, question
     // we can use docLoad here, but it will be non preformant and useless because
     // it will load the whole doc when we only need a specific thing
     // all this does is iterate through the user and get the recovery doc and pass to the doRec func
-    getPublicKey(context, {username}, (err, data) => {
+    getPublicKeyByUsername(context, {username}, (err, data) => {
         if (!data) {
             return callback('failed, no public key found');
         }
-        const targetAccount = gun.user(data.pub);
+        const targetAccount = accountHandles.accountByPub(context, {pub: data.pub});
         targetAccount.docLoad(async (data: any) => {
             try {
                 const {recover: {encryptedReminder}} = data;
@@ -178,13 +180,13 @@ export const recoverAccount = (context: IContext, {username, question1, question
  */
 export const trustAccount = async (context: IContext, callback: IGunCallback<null>) => {
     const {account} = context;
-    
+
     if (!account.is) {
         return callback('a user needs to be logged in in-order to proceed');
     }
 
     // TODO: what to trust
 
-    
+
     return callback(null);
 };

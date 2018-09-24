@@ -1,5 +1,4 @@
-import * as handles from './handles';
-import { user } from '../root';
+import * as profileHandles from './handles';
 
 interface IGetPublicKeyInput {
     username: string;
@@ -11,8 +10,8 @@ export interface IProfile {
     avatar: string;
 }
 
-export const getPublicKey = (context: IContext, {username}: IGetPublicKeyInput, callback: IGunCallback<{pub: string}>) => {
-    handles.profileByUsername(context, {username}).docLoad(({pub}: IProfile) => {
+export const getPublicKeyByUsername = (context: IContext, {username}: IGetPublicKeyInput, callback: IGunCallback<{pub: string}>) => {
+    profileHandles.profileByUsername(context, username).docLoad(({pub}: IProfile) => {
         return callback(null, {pub});
     });
 }
@@ -23,7 +22,7 @@ export const getCurrentProfile = (context: IContext, callback: IGunCallback<IPro
         return callback('a user needs to be logged in to proceed');
     }
 
-    handles.currentUserProfile(context).docLoad((data: IProfile) => {
+    profileHandles.currentUserProfile(context).docLoad((data: IProfile) => {
         if (!data) {
             return callback('no user profile found');
         }
@@ -33,7 +32,7 @@ export const getCurrentProfile = (context: IContext, callback: IGunCallback<IPro
 }
 
 export const getProfileByUsername = (context: IContext, {username}: any, callback: IGunCallback<IProfile>) => {
-    handles.profileByUsername(context, {username}).docLoad((data: IProfile) => {
+    profileHandles.profileByUsername(context, username).docLoad((data: IProfile) => {
         if (!data) {
             return callback('no user profile found');
         }

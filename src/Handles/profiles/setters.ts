@@ -5,10 +5,8 @@ interface ICreateProfileInput {
     pub: string;
 }
 
-export const createProfile = ({gun}: IContext, createProfileInput: ICreateProfileInput, callback: IGunCallback<null>) => {
-    if (!gun) {
-        return callback('failed, injected parameter');
-    }
+export const createProfile = (context: IContext, createProfileInput: ICreateProfileInput, callback: IGunCallback<null>) => {
+    const {gun} = context;
     const {username, ...rest} = createProfileInput;
     gun.get('profiles').get(username).put({...rest}, (flags) => {
         if (flags.err) {

@@ -1,3 +1,5 @@
+import {datePathFromDate} from './helpers';
+
 export interface ICreatePostInput {
     title: string;
     text?: string;
@@ -7,10 +9,8 @@ export interface ICreatePostInput {
     private: boolean;
 }
 
-export const createPost = ({account, gun, time}: IContext, createPostInput: ICreatePostInput, callback: IGunCallback<null>) => {
-    if (!account || !gun || !time) {
-        return callback('failed, injected parameters');
-    }
+export const createPost = (context: IContext, createPostInput: ICreatePostInput, callback: IGunCallback<null>) => {
+    const {account, gun, time} = context;
     if (!account.is) {
         return callback('a user needs to be logged in to proceed');
     }
@@ -18,7 +18,7 @@ export const createPost = ({account, gun, time}: IContext, createPostInput: ICre
     const currentUserAlias = account.is.alias;
 
     const currentTime = time();
-    const datePath = currentTime.getUTCFullYear() + '/' + (currentTime.getUTCMonth() + 1) + '/' + currentTime.getUTCDate();
+    const datePath = datePathFromDate(currentTime);
 
     const publicPath = datePath + '/public/';
     const privatePath = datePath + '/private/' + account.is.alias;
@@ -27,17 +27,17 @@ export const createPost = ({account, gun, time}: IContext, createPostInput: ICre
 
     const method = createPostInput.private ? 'encrypt' : 'set';
 
-    gun.get('posts/' + path)[method]({...createPostInput, owner: currentUserAlias, timestamp: time().getTime()}, (flags: IGunSetterCallback) => {
+    gun.get(TABLES.POSTS).get(path)[method]({...createPostInput, owner: currentUserAlias, timestamp: time().getTime()}, (flags: IGunSetterCallback) => {
         if (flags.err) {
             return callback('failed, error => ' + flags.err);
         }
         const postId = flags['#'];
-        gun.get('postsByUser').get(currentUserAlias).set({path}, (flags) => {
+        gun.get(TABLES.POST_METAS_BY_USER).get(currentUserAlias).set({postPath: `${path}/${postId}`}, (flags) => {
             if (flags.err) {
                 return callback('failed, error => ' + flags.err);
             }
 
-            gun.get('postsById').get(postId).put({path, priv: createPostInput.private, owner: currentUserAlias}, (ack) => {
+            gun.get(TABLES.POST_META_BY_ID).get(postId).put({postPath: `${path}/${postId}`, privatePost: createPostInput.private, owner: currentUserAlias}, (ack) => {
                 if (ack.err) {
                     return callback('failed, error => ' + ack.err);
                 }
@@ -47,16 +47,14 @@ export const createPost = ({account, gun, time}: IContext, createPostInput: ICre
     });
 }
 
-export const likePost = ({account, gun, time}: IContext, {postId}: any, callback: IGunCallback<null>) => {
-    if (!gun || !account || !time) {
-        return callback('failed, injected parameters');
-    }
+export const likePost = (context: IContext, {postId}: any, callback: IGunCallback<null>) => {
+    const {account, gun, time} = context;
 
     if (!account.is) {
         return callback('a user needs to be logged in to proceed');
     }
 
-    gun.get('postsById').get(postId).docLoad((data: {path: string, priv: boolean, owner: string}) => {
+    gun.get('postsById').get(postId).docLoad((data: {path: string, privatePost: boolean, owner: string}) => {
         if (!data) {
             return callback('no post found by this id');
         }
